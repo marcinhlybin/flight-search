@@ -176,3 +176,5 @@ if __name__ == "__main__":
 
     if args.airlines == 'qatar':
         qatar_main(args)
+
+    driver.close()
