@@ -13,6 +13,7 @@ from selenium.webdriver.support.ui import Select
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import ElementNotInteractableException
 
 SUPPORTED_AIRLINES = ("qatar",)
 
@@ -42,25 +43,29 @@ def qatar_search(from_airport, to_airport, departure_date, return_date, travel_c
     passengers_element.clear()
     passengers_element.send_keys("1 Passenger")
 
-    premium_element = driver.find_element_by_xpath("//span[text()='Economy']")
-    premium_element.click()
-
-    travel_class_keys = dict(business="b", first="f")
-    actions = ActionChains(driver)
-    actions.send_keys(travel_class_keys[travel_class])
-    actions.send_keys(Keys.RETURN)
-    actions.perform()
+    try:
+        premium_element = driver.find_element_by_xpath("//span[text()='Economy']")
+        premium_element.click()
+        travel_class_keys = dict(business="b", economy="e")
+        actions = ActionChains(driver)
+        actions.send_keys(travel_class_keys[travel_class])
+        actions.send_keys(Keys.RETURN)
+        actions.perform()
+    except ElementNotInteractableException:
+        if travel_class != "economy":
+            premium_element = driver.find_element_by_xpath("//span[text()='Premium only']")
+            premium_element.click()
 
     search_element = driver.find_element_by_id("T7-search")
     search_element.click()
 
 
 def qatar_get_page_date(page_type, max_retries=12, sleep=5):
-    WebDriverWait(driver, 120).until(
+    WebDriverWait(driver, 300).until(
         EC.visibility_of_element_located((By.ID, "w-nav-incoming"))
     )
 
-    WebDriverWait(driver, 120).until(
+    WebDriverWait(driver, 300).until(
         EC.visibility_of_element_located((By.CLASS_NAME, "slick-center"))
     )
 
@@ -78,7 +83,7 @@ def qatar_get_page_date(page_type, max_retries=12, sleep=5):
     return date
 
 
-def qatar_go_next_page(page_type, last_page_date, max_retries=12, sleep=5):
+def qatar_go_next_page(page_type, last_page_date, max_retries=36, sleep=5):
     print("   > waiting for the next {:>8s} page...".format(page_type), end="", flush=True)
 
     scroll_view_element_ids = dict(
@@ -101,8 +106,11 @@ def qatar_go_next_page(page_type, last_page_date, max_retries=12, sleep=5):
         next_page_date = qatar_get_page_date(page_type)
         if next_page_date != last_page_date:
             print(" got " + next_page_date.strftime("%d %b %Y"), flush=True)
-            break
+            return
+
         time.sleep(sleep)
+
+    raise Exception("Could not get page")
 
 def qatar_main(args):
     # Parse dates
@@ -119,6 +127,7 @@ def qatar_main(args):
     print("   return:      " + return_date_str)
 
     driver.get("https://www.qatarairways.com/en/homepage.html")
+    driver.maximize_window()
 
     qatar_search(
         from_airport=args.from_airport,
@@ -168,7 +177,7 @@ if __name__ == "__main__":
     parser.add_argument("-d", "--date", default=datetime.now().strftime('%Y-%m-%d'), help="Departure date")
     parser.add_argument("-w", "--weeks", default=3, help="Return flight after this number of weeks")
     parser.add_argument("-m", "--search-months", dest="months", type=int, default=6, help="Stop search after this number of months")
-    parser.add_argument("-c", "--class", dest="travel_class", default="business", choices=("business", "first"), help="Travel class")
+    parser.add_argument("-c", "--class", dest="travel_class", default="business", choices=("business", "economy"), help="Travel class")
     args = parser.parse_args()
 
     # Global driver variable
@@ -177,4 +186,4 @@ if __name__ == "__main__":
     if args.airlines == 'qatar':
         qatar_main(args)
 
-    driver.close()
+    driver.quit()

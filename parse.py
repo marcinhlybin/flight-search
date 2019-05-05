@@ -45,8 +45,6 @@ if __name__ == "__main__":
                 #print('Found {}: {} {} {}'.format(flight_type, date_str, amount, currency))
                 del(day, month, year, currency, amount)
 
-
-
         min_outbound_date = min(prices['outbound'], key=lambda x: prices['outbound'][x])
         min_outbound_price = prices['outbound'][min_outbound_date]
         print('Minimal outbound price {}: {}'.format(min_outbound_date, min_outbound_price))
