@@ -55,12 +55,22 @@ def qatar_search(from_airport, to_airport, departure_date, return_date, travel_c
     search_element.click()
 
 
-def qatar_get_page_date(max_retries=12, sleep=5):
-    WebDriverWait(driver, 60).until(
+def qatar_get_page_date(page_type, max_retries=12, sleep=5):
+    WebDriverWait(driver, 120).until(
+        EC.visibility_of_element_located((By.ID, "w-nav-incoming"))
+    )
+
+    WebDriverWait(driver, 120).until(
         EC.visibility_of_element_located((By.CLASS_NAME, "slick-center"))
     )
 
-    date_element = driver.find_element_by_class_name("slick-center")
+    date_element_ids = dict(
+        outbound='w-nav',
+        inbound='w-nav-incoming'
+    )
+
+    date_element = driver.find_element_by_id(date_element_ids[page_type])
+    date_element = date_element.find_element_by_class_name("slick-center")
     date = date_element.text.replace('\n', ' ').split()
     date = ' '.join(date[2:5])
     date = datetime.strptime(date, '%d %b %Y')
@@ -68,19 +78,31 @@ def qatar_get_page_date(max_retries=12, sleep=5):
     return date
 
 
-def qatar_go_next_page(last_page_date, max_retries=12, sleep=5):
-    print("   > waiting for the next page...", end="", flush=True)
-    next_page_element = driver.find_element_by_id('flightDetailForm_outbound:next_OB')
+def qatar_go_next_page(page_type, last_page_date, max_retries=12, sleep=5):
+    print("   > waiting for the next {:>8s} page...".format(page_type), end="", flush=True)
+
+    scroll_view_element_ids = dict(
+        outbound='outbound',
+        inbound='return'
+    )
+    scroll_view_element = driver.find_element_by_id(scroll_view_element_ids[page_type])
+    driver.execute_script("arguments[0].scrollIntoView(true);", scroll_view_element)
+    time.sleep(2)
+
+    next_page_element_ids = dict(
+        outbound='flightDetailForm_outbound:next_OB',
+        inbound='flightDetailForm_inbound:next_RT'
+    )
+    next_page_element = driver.find_element_by_id(next_page_element_ids[page_type])
     actions = ActionChains(driver)
     actions.move_to_element(next_page_element).click().perform()
 
     for _ in range(0, max_retries):
-        next_page_date = qatar_get_page_date()
+        next_page_date = qatar_get_page_date(page_type)
         if next_page_date != last_page_date:
             print(" got " + next_page_date.strftime("%d %b %Y"), flush=True)
             break
         time.sleep(sleep)
-
 
 def qatar_main(args):
     # Parse dates
@@ -111,21 +133,28 @@ def qatar_main(args):
     if not os.path.exists(dir_name):
         os.makedirs(dir_name)
 
-    page_date = qatar_get_page_date()
-    while page_date <= search_end_date:
-        site_filename = "qatar-{}-{}:{}-{}:{}-{}.html".format(
-            args.travel_class,
-            args.from_airport,
-            args.to_airport,
-            departure_date.strftime('%Y%m%d'),
-            return_date.strftime('%Y%m%d'),
-            page_date.strftime('%Y%m%d')
-        )
-        with open(dir_name + '/' + site_filename, 'w') as f:
-            f.write(driver.page_source)
+    page_dates = dict(
+        inbound=qatar_get_page_date('inbound'),
+        outbound=qatar_get_page_date('outbound')
+    )
 
-        qatar_go_next_page(last_page_date=page_date)
-        page_date = qatar_get_page_date()
+    while page_dates['outbound'] <= search_end_date:
+        for page_type in ('inbound', 'outbound'):
+            site_filename = "qatar-{}-{}:{}-{}:{}-{}:{}.html".format(
+                args.travel_class,
+                args.from_airport,
+                args.to_airport,
+                departure_date.strftime('%Y%m%d'),
+                return_date.strftime('%Y%m%d'),
+                page_dates['outbound'].strftime('%Y%m%d'),
+                page_dates['inbound'].strftime('%Y%m%d')
+            )
+            with open(dir_name + '/' + site_filename, 'w') as f:
+                f.write(driver.page_source)
+
+            qatar_go_next_page(page_type=page_type, last_page_date=page_dates[page_type])
+            page_dates[page_type] = qatar_get_page_date(page_type=page_type)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
