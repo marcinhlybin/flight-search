@@ -17,6 +17,7 @@ from selenium.common.exceptions import ElementNotInteractableException
 
 SUPPORTED_AIRLINES = ("qatar",)
 
+
 def qatar_search(from_airport, to_airport, departure_date, return_date, travel_class):
     time.sleep(5)
     from_element = driver.find_element_by_id("T7-from")
@@ -112,6 +113,7 @@ def qatar_go_next_page(page_type, last_page_date, max_retries=36, sleep=5):
 
     raise Exception("Could not get page")
 
+
 def qatar_main(args):
     # Parse dates
     departure_date = datetime.strptime(args.date, "%Y-%m-%d")
@@ -138,7 +140,7 @@ def qatar_main(args):
     )
 
     today_date_str = datetime.now().strftime('%Y%m%d%H%M')
-    dir_name = 'htmls/qatar/' + today_date_str
+    dir_name = 'htmls/qatar/{}-{}:{}-{}'.format(today_date_str, args.from_airport, args.to_airport, args.travel_class)
     if not os.path.exists(dir_name):
         os.makedirs(dir_name)
 
