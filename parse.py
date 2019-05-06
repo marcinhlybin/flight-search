@@ -51,13 +51,14 @@ if __name__ == "__main__":
 
         min_inbound_date = min(prices['inbound'], key=lambda x: prices['inbound'][x])
         min_inbound_price = prices['inbound'][min_inbound_date]
-        print('Minimal inbound price  {}: {}'.format(min_inbound_date, min_inbound_price))
+        print('Minimal inbound price  {}: {:.2f}'.format(min_inbound_date, min_inbound_price))
 
         total_price = min_outbound_price + min_inbound_price
-        print('Total price: {}'.format(total_price))
+        print('Total price: {:.2f}'.format(total_price))
         print()
 
         if not min_total_price or total_price < min_total_price:
             min_total_price = total_price
+            total_price_date = "{} - {}".format(min_outbound_date, min_inbound_date)
 
-    print('MINIMAL TOTAL PRICE: {}'.format(min_total_price))
+    print('MINIMAL TOTAL PRICE ({}): {:.2f}'.format(total_price_date, min_total_price))
