@@ -14,6 +14,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import ElementNotInteractableException
+from selenium.webdriver.firefox.options import Options
 
 SUPPORTED_AIRLINES = ("qatar",)
 
@@ -129,7 +130,6 @@ def qatar_main(args):
     print("   return:      " + return_date_str)
 
     driver.get("https://www.qatarairways.com/en/homepage.html")
-    driver.maximize_window()
 
     qatar_search(
         from_airport=args.from_airport,
@@ -182,10 +182,21 @@ if __name__ == "__main__":
     parser.add_argument("-c", "--class", dest="travel_class", default="business", choices=("business", "economy"), help="Travel class")
     args = parser.parse_args()
 
+    # Headless execution
+    options = Options()
+    options.headless = True
+    os.environ['MOZ_HEADLESS_WIDTH'] = '2560' # workaround to set size correctly
+    os.environ['MOZ_HEADLESS_HEIGHT'] = '1440'
+
     # Global driver variable
-    driver = webdriver.Firefox(executable_path=os.path.abspath("geckodriver"))
+    driver = webdriver.Firefox(executable_path=os.path.abspath("geckodriver"), options=options)
+    driver.set_window_size(2560, 1440)
 
-    if args.airlines == 'qatar':
-        qatar_main(args)
-
-    driver.quit()
+    try:
+        if args.airlines == 'qatar':
+            qatar_main(args)
+    except:
+        driver.save_screenshot(args.airlines + '-error.png')
+        raise
+    finally:
+        driver.quit()
