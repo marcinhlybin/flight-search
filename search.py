@@ -119,7 +119,7 @@ def qatar_main(args):
     # Parse dates
     departure_date = datetime.strptime(args.date, "%Y-%m-%d")
     departure_date_str = departure_date.strftime('%d %b %Y')
-    return_date = departure_date + timedelta(weeks=3)
+    return_date = departure_date + timedelta(weeks=int(args.weeks))
     return_date_str = return_date.strftime('%d %b %Y')
     search_end_date = departure_date + relativedelta(months=args.months)
     search_end_date_str = search_end_date.strftime('%d %b %Y')
