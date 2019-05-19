@@ -119,7 +119,7 @@ def qatar_main(args):
     # Parse dates
     departure_date = datetime.strptime(args.date, "%Y-%m-%d")
     departure_date_str = departure_date.strftime('%d %b %Y')
-    return_date = departure_date + timedelta(weeks=int(args.weeks))
+    return_date = departure_date + timedelta(weeks=args.weeks)
     return_date_str = return_date.strftime('%d %b %Y')
     search_end_date = departure_date + relativedelta(months=args.months)
     search_end_date_str = search_end_date.strftime('%d %b %Y')
@@ -177,7 +177,7 @@ if __name__ == "__main__":
     parser.add_argument("-t", "--to", dest="to_airport", default="AKL", help="Flight destination")
     parser.add_argument("-a", "--airlines", default=SUPPORTED_AIRLINES[0], choices=SUPPORTED_AIRLINES, help="Airlines name")
     parser.add_argument("-d", "--date", default=datetime.now().strftime('%Y-%m-%d'), help="Departure date YYYY-MM-DD")
-    parser.add_argument("-w", "--weeks", default=3, help="Return flight after this number of weeks")
+    parser.add_argument("-w", "--weeks", default=3, type=int, help="Return flight after this number of weeks")
     parser.add_argument("-m", "--search-months", dest="months", type=int, default=6, help="Stop search after this number of months")
     parser.add_argument("-c", "--class", dest="travel_class", default="business", choices=("business", "economy"), help="Travel class")
     parser.add_argument("-v", "--verbose", default=False, action="store_true", help="Show browser window while executing")
