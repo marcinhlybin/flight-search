@@ -180,13 +180,16 @@ if __name__ == "__main__":
     parser.add_argument("-w", "--weeks", default=3, help="Return flight after this number of weeks")
     parser.add_argument("-m", "--search-months", dest="months", type=int, default=6, help="Stop search after this number of months")
     parser.add_argument("-c", "--class", dest="travel_class", default="business", choices=("business", "economy"), help="Travel class")
+    parser.add_argument("-v", "--verbose", default=False, action="store_true", help="Show browser window while executing")
     args = parser.parse_args()
 
     # Headless execution
     options = Options()
-    options.headless = True
-    os.environ['MOZ_HEADLESS_WIDTH'] = '2560' # workaround to set size correctly
-    os.environ['MOZ_HEADLESS_HEIGHT'] = '1440'
+
+    if not args.verbose:
+        options.headless = True
+        os.environ['MOZ_HEADLESS_WIDTH'] = '2560' # workaround to set size correctly
+        os.environ['MOZ_HEADLESS_HEIGHT'] = '1440'
 
     # Global driver variable
     driver = webdriver.Firefox(executable_path=os.path.abspath("geckodriver"), options=options)
