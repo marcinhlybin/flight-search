@@ -35,7 +35,7 @@ optional arguments:
                         Flight destination (default: AKL)
   -a {qatar}, --airlines {qatar}
                         Airlines name (default: qatar)
-  -d DATE, --date DATE  Departure date (default: 2019-05-19)
+  -d DATE, --date DATE  Departure date YYYY-MM-DD (default: 2019-05-19)
   -w WEEKS, --weeks WEEKS
                         Return flight after this number of weeks (default: 3)
   -m MONTHS, --search-months MONTHS
@@ -59,4 +59,64 @@ Crawled sites are stored in `htmls/`. Simple parser is also available:
 ```
 # Remeber to change directory name
 python parse.py htmls/qatar/201905191538-WAW:AKL-business/
+```
+
+## Sample output
+
+Searcher:
+
+```
+$ python search.py -f WAW -t AKL -m 6 -w 3
+=> QATAR SEARCH (until 19 Nov 2019)
+   flight:      WAW-AKL Business
+   departure:   19 May 2019
+   return:      09 Jun 2019
+   > waiting for the next  inbound page... got 16 Jun 2019
+   > waiting for the next outbound page... got 26 May 2019
+   > waiting for the next  inbound page... got 23 Jun 2019
+   > waiting for the next outbound page... got 02 Jun 2019
+   > waiting for the next  inbound page... got 30 Jun 2019
+   > waiting for the next outbound page... got 09 Jun 2019
+[...]
+   > waiting for the next outbound page... got 17 Nov 2019
+   > waiting for the next  inbound page... got 15 Dec 2019
+   > waiting for the next outbound page... got 24 Nov 2019
+```
+
+Parser:
+
+```
+$ python parse.py htmls/qatar/201905191651-WAW:AKL-business/
+> Parsing file htmls/qatar/201905191651-WAW:AKL-business/qatar-business-WAW:AKL-20190519:20190609-20190519:20190609.html
+Minimal outbound price 22 May 2019: 11534.86
+Minimal inbound price  06 Jun 2019: 8401.56
+Total price: 19936.42
+
+> Parsing file htmls/qatar/201905191651-WAW:AKL-business/qatar-business-WAW:AKL-20190519:20190609-20190519:20190616.html
+Minimal outbound price 22 May 2019: 11534.86
+Minimal inbound price  13 Jun 2019: 8401.56
+Total price: 19936.42
+
+> Parsing file htmls/qatar/201905191651-WAW:AKL-business/qatar-business-WAW:AKL-20190519:20190609-20190526:20190616.html
+Minimal outbound price 23 May 2019: 11534.86
+Minimal inbound price  13 Jun 2019: 8401.56
+Total price: 19936.42
+[...]
+
+> Parsing file htmls/qatar/201905191651-WAW:AKL-business/qatar-business-WAW:AKL-20190519:20190609-20191110:20191208.html
+Minimal outbound price 08 Nov 2019: 8466.81
+Minimal inbound price  05 Dec 2019: 8409.52
+Total price: 16876.33
+
+> Parsing file htmls/qatar/201905191651-WAW:AKL-business/qatar-business-WAW:AKL-20190519:20190609-20191117:20191208.html
+Minimal outbound price 14 Nov 2019: 8466.81
+Minimal inbound price  05 Dec 2019: 8409.52
+Total price: 16876.33
+
+> Parsing file htmls/qatar/201905191651-WAW:AKL-business/qatar-business-WAW:AKL-20190519:20190609-20191117:20191215.html
+Minimal outbound price 15 Nov 2019: 8466.81
+Minimal inbound price  12 Dec 2019: 8409.52
+Total price: 16876.33
+
+MINIMAL TOTAL PRICE (17 Aug 2019 - 08 Sep 2019): 16876.33
 ```
